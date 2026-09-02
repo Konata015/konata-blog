@@ -123,17 +123,17 @@ export const siteConfig: SiteConfig = {
 		// 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
 		src: {
 			desktop: [
-				"/assets/desktop-banner/1.webp",
-				"/assets/desktop-banner/2.webp",
-				"/assets/desktop-banner/3.webp",
-				"/assets/desktop-banner/4.webp",
+				"/assets/desktop-banner/konata.webp", // 幸运星 · 泉此方
+				"/assets/desktop-banner/bocchi.webp", // 孤独摇滚！
+				"/assets/desktop-banner/k-on.webp", // 轻音少女
+				"/assets/desktop-banner/1.webp", // 主题自带樱花图
 			], // 桌面横幅图片
 			mobile: [
-				"/assets/mobile-banner/1.webp",
-				"/assets/mobile-banner/2.webp",
-				"/assets/mobile-banner/3.webp",
-				"/assets/mobile-banner/4.webp",
-			], // 移动横幅图片
+				"/assets/desktop-banner/konata.webp",
+				"/assets/desktop-banner/bocchi.webp",
+				"/assets/desktop-banner/k-on.webp",
+				"/assets/desktop-banner/1.webp",
+			], // 移动横幅图片（复用桌面图，自适应裁剪）
 		}, // 使用本地横幅图片
 
 		position: "center", // 等同于 object-position，仅支持 'top', 'center', 'bottom'。默认为 'center'
@@ -182,9 +182,9 @@ export const siteConfig: SiteConfig = {
 		},
 
 		credit: {
-			enable: false, // 显示横幅图片来源文本
+			enable: true, // 显示横幅图片来源文本
 
-			text: "Describe", // 要显示的来源文本
+			text: "壁纸来自网络收集 · 侵删", // 要显示的来源文本
 			url: "", // （可选）原始艺术品或艺术家页面的 URL 链接
 		},
 
