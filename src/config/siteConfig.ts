@@ -76,6 +76,8 @@ export const siteConfig: SiteConfig = {
 	},
 
 	// 日记页面 Memos API 地址，留空则使用静态数据
+	// 部署 Memos 后填: https://memos.你的域名/api/v1/memos?visibility=PUBLIC&state=NORMAL&limit=100
+	// 注意: 服务端必须设置环境变量 MEMOS_INSTANCE_URL（否则 API 拒绝匿名访问），详见 docs/BACKEND_DEPLOY.md
 	diaryApiUrl: "",
 
 	// 文章列表布局配置
