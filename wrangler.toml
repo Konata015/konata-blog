@@ -1,0 +1,12 @@
+name = "konata-blog"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-08-15"
+
+[[d1_databases]]
+binding = "DIARY_DB"
+database_name = "konata-diary"
+database_id = "fb9f1ae0-5d44-4278-8b71-77eb8003ee62"
+
+[[kv_namespaces]]
+binding = "DIARY_IMAGES"
+id = "00e9200066f849b3aa9453e6a0311993"

@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>日记发布管理</title>
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				padding: 24px 16px 64px;
+				font-family:
+					system-ui,
+					-apple-system,
+					"PingFang SC",
+					"Microsoft YaHei",
+					sans-serif;
+				background: #f5f6f8;
+				color: #1f2328;
+			}
+			main {
+				max-width: 640px;
+				margin: 0 auto;
+			}
+			h1 {
+				font-size: 22px;
+				margin: 0 0 20px;
+			}
+			h2 {
+				font-size: 16px;
+				margin: 32px 0 12px;
+			}
+			.card {
+				background: #fff;
+				border: 1px solid #e5e7eb;
+				border-radius: 12px;
+				padding: 16px;
+				margin-bottom: 16px;
+			}
+			label {
+				display: block;
+				font-size: 13px;
+				color: #57606a;
+				margin: 12px 0 4px;
+			}
+			input[type="password"],
+			input[type="text"],
+			textarea {
+				width: 100%;
+				padding: 8px 10px;
+				border: 1px solid #d0d7de;
+				border-radius: 8px;
+				font-size: 14px;
+				font-family: inherit;
+			}
+			textarea {
+				min-height: 120px;
+				resize: vertical;
+			}
+			button {
+				padding: 8px 16px;
+				border: none;
+				border-radius: 8px;
+				background: #0ea5e9;
+				color: #fff;
+				font-size: 14px;
+				cursor: pointer;
+				margin-top: 12px;
+			}
+			button:hover {
+				background: #0284c7;
+			}
+			button.danger {
+				background: transparent;
+				color: #dc2626;
+				border: 1px solid #dc2626;
+				padding: 4px 10px;
+				margin: 0;
+			}
+			.row {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				flex-wrap: wrap;
+			}
+			.status {
+				font-size: 13px;
+				margin-left: 8px;
+			}
+			.status.ok {
+				color: #16a34a;
+			}
+			.status.err {
+				color: #dc2626;
+			}
+			.entry {
+				border-bottom: 1px solid #eee;
+				padding: 12px 0;
+			}
+			.entry:last-child {
+				border-bottom: none;
+			}
+			.entry-meta {
+				font-size: 12px;
+				color: #8b949e;
+				display: flex;
+				gap: 8px;
+				align-items: center;
+				flex-wrap: wrap;
+				margin-bottom: 4px;
+			}
+			.entry-content {
+				font-size: 14px;
+				white-space: pre-wrap;
+				word-break: break-word;
+			}
+			.entry-images {
+				display: flex;
+				gap: 6px;
+				margin-top: 8px;
+				flex-wrap: wrap;
+			}
+			.entry-images img {
+				width: 72px;
+				height: 72px;
+				object-fit: cover;
+				border-radius: 6px;
+			}
+			.pinned-badge {
+				background: #fef3c7;
+				color: #b45309;
+				padding: 1px 8px;
+				border-radius: 999px;
+			}
+			.tag {
+				background: #eef1f4;
+				padding: 1px 8px;
+				border-radius: 999px;
+			}
+			#previews {
+				display: flex;
+				gap: 8px;
+				margin-top: 8px;
+				flex-wrap: wrap;
+			}
+			#previews img {
+				width: 80px;
+				height: 80px;
+				object-fit: cover;
+				border-radius: 6px;
+			}
+			.hint {
+				font-size: 12px;
+				color: #8b949e;
+				margin-top: 4px;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>日记发布管理</h1>
+
+			<div class="card">
+				<label for="password">管理密码</label>
+				<div class="row">
+					<input type="password" id="password" placeholder="输入管理密码" />
+					<button id="verify" type="button">验证并加载</button>
+				</div>
+				<p class="hint">密码验证通过后会保存在本机浏览器里，下次自动填充。</p>
+				<span class="status" id="auth-status"></span>
+			</div>
+
+			<div class="card">
+				<label for="content">内容</label>
+				<textarea id="content" placeholder="记录点什么…（支持换行）"></textarea>
+				<label for="tags">标签（逗号分隔，最多 6 个）</label>
+				<input type="text" id="tags" placeholder="日常, 动画" />
+				<div class="row" style="margin-top: 12px">
+					<label style="margin: 0"><input type="checkbox" id="pinned" /> 置顶</label>
+				</div>
+				<label for="images">图片（最多 9 张，自动压缩）</label>
+				<input type="file" id="images" accept="image/*" multiple />
+				<div id="previews"></div>
+				<div class="row">
+					<button id="publish" type="button">发布</button>
+					<span class="status" id="publish-status"></span>
+				</div>
+			</div>
+
+			<h2>已发布 <span id="count" style="color: #8b949e"></span></h2>
+			<div class="card" id="entries"></div>
+		</main>
+
+		<script>
+			const passwordInput =
+				document.getElementById<HTMLInputElement>("password");
+			const authStatus = document.getElementById("auth-status")!;
+			const contentInput =
+				document.getElementById<HTMLTextAreaElement>("content");
+			const tagsInput = document.getElementById<HTMLInputElement>("tags");
+			const pinnedInput =
+				document.getElementById<HTMLInputElement>("pinned");
+			const imagesInput =
+				document.getElementById<HTMLInputElement>("images");
+			const previews = document.getElementById("previews")!;
+			const publishStatus = document.getElementById("publish-status")!;
+			const entriesEl = document.getElementById("entries")!;
+			const countEl = document.getElementById("count")!;
+
+			const STORAGE_KEY = "diary-admin-password";
+
+			if (localStorage.getItem(STORAGE_KEY)) {
+				passwordInput.value = localStorage.getItem(STORAGE_KEY)!;
+			}
+
+			imagesInput.addEventListener("change", () => {
+				previews.innerHTML = "";
+				for (const file of Array.from(imagesInput.files ?? [])) {
+					const img = document.createElement("img");
+					img.src = URL.createObjectURL(file);
+					previews.appendChild(img);
+				}
+			});
+
+			function authHeaders(): HeadersInit {
+				return { "x-admin-token": passwordInput.value };
+			}
+
+			async function resizeImage(file: File): Promise<File> {
+				if (file.type === "image/gif" || file.size < 300 * 1024) {
+					return file;
+				}
+				const bitmap = await createImageBitmap(file);
+				const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+				const canvas = document.createElement("canvas");
+				canvas.width = Math.round(bitmap.width * scale);
+				canvas.height = Math.round(bitmap.height * scale);
+				canvas
+					.getContext("2d")!
+					.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+				const blob = await new Promise<Blob | null>((resolve) =>
+					canvas.toBlob(resolve, "image/jpeg", 0.85),
+				);
+				if (!blob) {
+					return file;
+				}
+				const name = file.name.replace(/\.\w+$/, "") + ".jpg";
+				return new File([blob], name, { type: "image/jpeg" });
+			}
+
+			function escapeHtml(text: string): string {
+				const div = document.createElement("div");
+				div.textContent = text;
+				return div.innerHTML;
+			}
+
+			async function loadEntries(): Promise<void> {
+				const res = await fetch("/api/diary");
+				const data = await res.json();
+				const memos = data.memos ?? [];
+				countEl.textContent = `(${memos.length})`;
+				entriesEl.innerHTML = "";
+				if (memos.length === 0) {
+					entriesEl.innerHTML =
+						'<p class="hint" style="margin:0">还没有日记，发布第一条吧。</p>';
+					return;
+				}
+				for (const memo of memos) {
+					const entry = document.createElement("div");
+					entry.className = "entry";
+					const meta = document.createElement("div");
+					meta.className = "entry-meta";
+					const bits: string[] = [
+						`#${memo.name}`,
+						new Date(memo.createTime).toLocaleString("zh-CN"),
+					];
+					if (memo.pinned) {
+						bits.push('<span class="pinned-badge">置顶</span>');
+					}
+					for (const tag of memo.tags ?? []) {
+						bits.push(`<span class="tag">${escapeHtml(tag)}</span>`);
+					}
+					meta.innerHTML = bits.join(" ");
+
+					const body = document.createElement("div");
+					body.className = "entry-content";
+					body.textContent = memo.content;
+
+					entry.appendChild(meta);
+					entry.appendChild(body);
+
+					if ((memo.attachments ?? []).length > 0) {
+						const imgs = document.createElement("div");
+						imgs.className = "entry-images";
+						for (const a of memo.attachments) {
+							const img = document.createElement("img");
+							img.src = `/file/${a.name}/${encodeURIComponent(a.filename)}`;
+							img.loading = "lazy";
+							imgs.appendChild(img);
+						}
+						entry.appendChild(imgs);
+					}
+
+					const del = document.createElement("button");
+					del.type = "button";
+					del.className = "danger";
+					del.textContent = "删除";
+					del.addEventListener("click", async () => {
+						if (!confirm(`确定删除日记 #${memo.name} 吗？`)) {
+							return;
+						}
+						const res = await fetch(`/api/diary?id=${memo.name}`, {
+							method: "DELETE",
+							headers: authHeaders(),
+						});
+						if (res.ok) {
+							loadEntries();
+						} else {
+							alert((await res.json()).error ?? "删除失败");
+						}
+					});
+					meta.appendChild(del);
+					entriesEl.appendChild(entry);
+				}
+			}
+
+			document
+				.getElementById("verify")!
+				.addEventListener("click", async () => {
+					authStatus.className = "status";
+					authStatus.textContent = "验证中…";
+					const res = await fetch("/api/diary?id=0", {
+						method: "DELETE",
+						headers: authHeaders(),
+					});
+					if (res.status === 401) {
+						authStatus.className = "status err";
+						authStatus.textContent = "密码错误";
+						return;
+					}
+					localStorage.setItem(STORAGE_KEY, passwordInput.value);
+					authStatus.className = "status ok";
+					authStatus.textContent = "密码正确，已记住";
+					loadEntries();
+				});
+
+			document
+				.getElementById("publish")!
+				.addEventListener("click", async () => {
+					const content = contentInput.value.trim();
+					if (!content) {
+						publishStatus.className = "status err";
+						publishStatus.textContent = "内容不能为空";
+						return;
+					}
+					publishStatus.className = "status";
+					publishStatus.textContent = "发布中…";
+
+					const form = new FormData();
+					form.append("content", content);
+					form.append("tags", tagsInput.value);
+					form.append("pinned", pinnedInput ? "1" : "0");
+					try {
+						for (const file of Array.from(imagesInput.files ?? [])) {
+							form.append("images", await resizeImage(file), file.name);
+						}
+					} catch {
+						publishStatus.className = "status err";
+						publishStatus.textContent = "图片处理失败，请重试";
+						return;
+					}
+
+					const res = await fetch("/api/diary", {
+						method: "POST",
+						headers: authHeaders(),
+						body: form,
+					});
+					if (res.ok) {
+						publishStatus.className = "status ok";
+						publishStatus.textContent = "发布成功！";
+						contentInput.value = "";
+						tagsInput.value = "";
+						pinnedInput.checked = false;
+						imagesInput.value = "";
+						previews.innerHTML = "";
+						loadEntries();
+					} else {
+						const data = await res.json().catch(() => ({}));
+						publishStatus.className = "status err";
+						publishStatus.textContent = data.error ?? `发布失败 (${res.status})`;
+					}
+				});
+		</script>
+	</body>
+</html>

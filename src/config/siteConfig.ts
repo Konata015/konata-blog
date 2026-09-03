@@ -75,10 +75,9 @@ export const siteConfig: SiteConfig = {
 		mode: "local", // 番剧页面模式："bangumi" 使用Bangumi API，"local" 使用本地配置，"bilibili" 使用Bilibili API
 	},
 
-	// 日记页面 Memos API 地址，留空则使用静态数据
-	// 部署 Memos 后填: https://memos.你的域名/api/v1/memos?visibility=PUBLIC&state=NORMAL&limit=100
-	// 注意: 服务端必须设置环境变量 MEMOS_INSTANCE_URL（否则 API 拒绝匿名访问），详见 docs/BACKEND_DEPLOY.md
-	diaryApiUrl: "",
+	// 日记页面 API 地址，留空则使用静态数据（src/data/diary.ts）
+	// 已接入本站 Cloudflare Pages Functions + D1：/api/diary（发布入口 /diary-admin，详见 docs/DIARY_AND_COMMENTS.md）
+	diaryApiUrl: "/api/diary",
 
 	// 文章列表布局配置
 	postListLayout: {

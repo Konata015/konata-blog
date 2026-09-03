@@ -295,7 +295,7 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 									'">' +
 									'<div class="p-5">' +
 									'<p class="text-sm md:text-base text-black/90 dark:text-white/90 leading-relaxed mb-3">' +
-									escapeHtml(moment.content) +
+									escapeHtml(moment.content).replace(/\n/g, "<br>") +
 									"</p>" +
 									imagesHtml +
 									tagsHtml +
